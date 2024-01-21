@@ -1,0 +1,31 @@
+def anova(df,feature,label):
+    import pandas as pd
+    import numpy as np
+    from scipy import stats
+    groups = df[feature].unique()
+    df_grouped = df.groupby(feature)
+    group_labels = []
+    for item in group_labels:
+        item_list = df_grouped.get_group(item_list)
+        group_labels.append(item_list[label])
+    oneway = stats.f_oneway(group_labels)
+    return oneway
+
+def bivarstats(df,label):
+    from scipy import stats
+    import pandas as pd
+    import numpy as np
+    output_df = pd.DataFrame(columns=['r','f','t2','p-value'])
+    for col in df:
+        if not col == label:
+            if df[col].isnull().sum() == 0:
+                if pd.api.types.is_numeric_dtype(df[col]):
+                    r,p = stats.pearsonr(df[label],df[col])
+                    output_df.loc[col] = [round(r,3),np.nan,np.nan,round(r,3)]
+                else:
+                    f,p = anova(df[col,label],col,label)
+                    output_df.loc[col] = [round(r,3),round(f,3),round(p,3),round(r,3)]
+            else:
+                output_df.loc[col] = [np.nan,np.nan,np.nan,'null']
+    # output_df.sort_values(by=['r'],ascending=False)
+    return output_df.reindex(output_df.r.abs().sort_values().index)
